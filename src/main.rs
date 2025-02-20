@@ -12,7 +12,7 @@ fn main() {
 }
 
 fn run() -> Result<()> {
-    let task = Task::try_from(args()).context("could not parse task from args")?;
+    let task = Task::from_iter(args().skip(1));
 
     serde_json::to_writer(stdout(), &task).context("could not write JSON to stdout")?;
 
