@@ -1,21 +1,21 @@
 #[derive(serde::Serialize)]
 pub struct Task {
     description: String,
-    // entry
-    // start
-    // end
     #[serde(skip_serializing_if = "Option::is_none")]
     due: Option<String>,
-    // until
-    // scheduled
-    // wait
-    // recur
-    // project
-    // tags
-    // priority
     // depends
+    // end
+    // entry
     // modified
+    // priority
+    // project
+    // recur
+    // scheduled
+    // start
+    // tags
     // UDA
+    // until
+    // wait
 }
 
 impl FromIterator<String> for Task {
