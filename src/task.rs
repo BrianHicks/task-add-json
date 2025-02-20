@@ -36,8 +36,8 @@ mod tests {
 
     #[test]
     fn test_task_from_args() {
-        let args = vec!["arg1", "arg2", "arg3"];
+        let args = vec!["walk", "the", "dog"];
         let task = Task::from_iter(args.into_iter());
-        assert_eq!(task.description, "arg1 arg2 arg3");
+        assert_eq!(task.description, "walk the dog");
     }
 }
