@@ -76,7 +76,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_task_from_args() {
+    fn task_from_args() {
         let args = vec!["walk", "the", "dog"];
         let task = Task::from_iter(args.into_iter());
 
@@ -84,7 +84,7 @@ mod tests {
     }
 
     #[test]
-    fn test_due() {
+    fn due() {
         let args = vec!["pay", "taxes", "due:2025-04-15"];
         let task = Task::from_iter(args.into_iter());
 
@@ -92,7 +92,7 @@ mod tests {
     }
 
     #[test]
-    fn test_depends() {
+    fn depends() {
         let args = vec!["depends:1", "depends:2"];
         let task = Task::from_iter(args.into_iter());
 
@@ -103,7 +103,7 @@ mod tests {
     }
 
     #[test]
-    fn test_depends_split() {
+    fn depends_split() {
         let args = vec!["depends:1,2"];
         let task = Task::from_iter(args.into_iter());
 
@@ -114,7 +114,7 @@ mod tests {
     }
 
     #[test]
-    fn test_depends_dupe() {
+    fn depends_dupe() {
         let args = vec!["depends:1,2", "depends:1"];
         let task = Task::from_iter(args.into_iter());
 
@@ -125,7 +125,7 @@ mod tests {
     }
 
     #[test]
-    fn test_until() {
+    fn until() {
         let args = vec!["until:2025-04-15"];
         let task = Task::from_iter(args.into_iter());
 
