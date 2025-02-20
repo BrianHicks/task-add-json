@@ -1,6 +1,20 @@
 #[derive(serde::Serialize)]
 pub struct Task {
     description: String,
+    // entry
+    // start
+    // end
+    // due
+    // until
+    // scheduled
+    // wait
+    // recur
+    // project
+    // tags
+    // priority
+    // depends
+    // modified
+    // UDA
 }
 
 impl FromIterator<String> for Task {
