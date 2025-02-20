@@ -35,7 +35,7 @@ impl FromIterator<String> for Task {
             match word.split_once(":") {
                 Some(("due", date)) => due = Some(date.to_owned()),
                 Some(("dep" | "depe" | "depen" | "depend" | "depends", dep)) => {
-                    depends.push(dep.to_owned())
+                    dep.split(",").for_each(|dep| depends.push(dep.to_owned()));
                 }
                 Some(_) | None => description.push(word),
             }
@@ -81,6 +81,14 @@ mod tests {
     #[test]
     fn test_depends() {
         let args = vec!["depends:1", "depends:2"];
+        let task = Task::from_iter(args.into_iter());
+
+        assert_eq!(task.depends, vec![String::from("1"), String::from("2")])
+    }
+
+    #[test]
+    fn test_depends_split() {
+        let args = vec!["depends:1,2"];
         let task = Task::from_iter(args.into_iter());
 
         assert_eq!(task.depends, vec![String::from("1"), String::from("2")])
