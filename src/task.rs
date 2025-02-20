@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 #[derive(serde::Serialize)]
 pub struct Task {
     description: String,
@@ -5,8 +7,8 @@ pub struct Task {
     #[serde(skip_serializing_if = "Option::is_none")]
     due: Option<String>,
 
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    depends: Vec<String>,
+    #[serde(skip_serializing_if = "HashSet::is_empty")]
+    depends: HashSet<String>,
     // end
     // entry
     // modified
@@ -29,13 +31,13 @@ impl FromIterator<String> for Task {
         // The median in my ~1200 task history is 6 words. 8 should be plenty.
         let mut description = Vec::with_capacity(8);
         let mut due = None;
-        let mut depends = Vec::with_capacity(0);
+        let mut depends = HashSet::with_capacity(0);
 
         for word in iter {
             match word.split_once(":") {
                 Some(("due", date)) => due = Some(date.to_owned()),
-                Some(("dep" | "depe" | "depen" | "depend" | "depends", dep)) => {
-                    dep.split(",").for_each(|dep| depends.push(dep.to_owned()));
+                Some(("dep" | "depe" | "depen" | "depend" | "depends", deps)) => {
+                    depends.extend(deps.split(",").map(|s| s.to_owned()));
                 }
                 Some(_) | None => description.push(word),
             }
@@ -83,7 +85,10 @@ mod tests {
         let args = vec!["depends:1", "depends:2"];
         let task = Task::from_iter(args.into_iter());
 
-        assert_eq!(task.depends, vec![String::from("1"), String::from("2")])
+        assert_eq!(
+            task.depends,
+            HashSet::from([String::from("1"), String::from("2")])
+        )
     }
 
     #[test]
@@ -91,6 +96,20 @@ mod tests {
         let args = vec!["depends:1,2"];
         let task = Task::from_iter(args.into_iter());
 
-        assert_eq!(task.depends, vec![String::from("1"), String::from("2")])
+        assert_eq!(
+            task.depends,
+            HashSet::from([String::from("1"), String::from("2")])
+        )
+    }
+
+    #[test]
+    fn test_depends_dupe() {
+        let args = vec!["depends:1,2", "depends:1"];
+        let task = Task::from_iter(args.into_iter());
+
+        assert_eq!(
+            task.depends,
+            HashSet::from([String::from("1"), String::from("2")])
+        )
     }
 }
