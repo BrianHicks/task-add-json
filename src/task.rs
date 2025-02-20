@@ -19,7 +19,8 @@ pub struct Task {
     // start
     // tags
     // UDA
-    // until
+    #[serde(skip_serializing_if = "Option::is_none")]
+    until: Option<String>,
     // wait
 }
 
@@ -32,6 +33,7 @@ impl FromIterator<String> for Task {
         let mut description = Vec::with_capacity(8);
         let mut due = None;
         let mut depends = HashSet::with_capacity(0);
+        let mut until = None;
 
         for word in iter {
             match word.split_once(":") {
@@ -39,6 +41,7 @@ impl FromIterator<String> for Task {
                 Some(("dep" | "depe" | "depen" | "depend" | "depends", deps)) => {
                     depends.extend(deps.split(",").map(|s| s.to_owned()));
                 }
+                Some(("un" | "unt" | "unti" | "until", date)) => until = Some(date.to_owned()),
                 Some(_) | None => description.push(word),
             }
         }
@@ -47,6 +50,7 @@ impl FromIterator<String> for Task {
             description: description.join(" "),
             due,
             depends,
+            until,
         }
     }
 }
@@ -111,5 +115,13 @@ mod tests {
             task.depends,
             HashSet::from([String::from("1"), String::from("2")])
         )
+    }
+
+    #[test]
+    fn test_until() {
+        let args = vec!["until:2025-04-15"];
+        let task = Task::from_iter(args.into_iter());
+
+        assert_eq!(task.until, Some("2025-04-15".into()))
     }
 }
