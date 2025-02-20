@@ -4,7 +4,8 @@ pub struct Task {
     // entry
     // start
     // end
-    // due
+    #[serde(skip_serializing_if = "Option::is_none")]
+    due: Option<String>,
     // until
     // scheduled
     // wait
@@ -24,13 +25,18 @@ impl FromIterator<String> for Task {
     {
         // The median in my ~1200 task history is 6 words. 8 should be plenty.
         let mut description = Vec::with_capacity(8);
+        let mut due = None;
 
         for word in iter {
-            description.push(word);
+            match word.split_once(":") {
+                Some(("due", date)) => due = Some(date.to_owned()),
+                Some(_) | None => description.push(word),
+            }
         }
 
         Task {
             description: description.join(" "),
+            due,
         }
     }
 }
@@ -52,6 +58,15 @@ mod tests {
     fn test_task_from_args() {
         let args = vec!["walk", "the", "dog"];
         let task = Task::from_iter(args.into_iter());
+
         assert_eq!(task.description, "walk the dog");
+    }
+
+    #[test]
+    fn test_due() {
+        let args = vec!["pay", "taxes", "due:2025-04-15"];
+        let task = Task::from_iter(args.into_iter());
+
+        assert_eq!(task.due, Some("2025-04-15".into()))
     }
 }
