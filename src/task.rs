@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 #[derive(serde::Serialize)]
 pub struct Task {
@@ -18,7 +18,9 @@ pub struct Task {
     // scheduled
     // start
     // tags
-    // UDA
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
+    uda: HashMap<String, String>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     until: Option<String>,
     // wait
@@ -33,6 +35,7 @@ impl FromIterator<String> for Task {
         let mut description = Vec::with_capacity(8);
         let mut due = None;
         let mut depends = HashSet::with_capacity(0);
+        let mut uda = HashMap::new();
         let mut until = None;
 
         for word in iter {
@@ -42,7 +45,10 @@ impl FromIterator<String> for Task {
                     depends.extend(deps.split(",").map(|s| s.to_owned()));
                 }
                 Some(("un" | "unt" | "unti" | "until", date)) => until = Some(date.to_owned()),
-                Some(_) | None => description.push(word),
+                Some((uda_key, uda_value)) => {
+                    uda.insert(uda_key.to_owned(), uda_value.to_owned());
+                }
+                None => description.push(word),
             }
         }
 
@@ -50,6 +56,7 @@ impl FromIterator<String> for Task {
             description: description.join(" "),
             due,
             depends,
+            uda,
             until,
         }
     }
@@ -123,5 +130,19 @@ mod tests {
         let task = Task::from_iter(args.into_iter());
 
         assert_eq!(task.until, Some("2025-04-15".into()))
+    }
+
+    #[test]
+    fn uda() {
+        let args = vec!["jira:123", "estimate:PT5H"];
+        let task = Task::from_iter(args.into_iter());
+
+        assert_eq!(
+            task.uda,
+            HashMap::from([
+                ("jira".into(), "123".into()),
+                ("estimate".into(), "PT5H".into())
+            ])
+        )
     }
 }
