@@ -11,7 +11,8 @@ pub struct Task {
     depends: HashSet<String>,
     // end
     // entry
-    // modified
+    #[serde(skip_serializing_if = "Option::is_none")]
+    modified: Option<String>, // TODO: date
     // priority
     // project
     // recur
@@ -36,6 +37,7 @@ impl FromIterator<String> for Task {
         let mut description = Vec::with_capacity(8);
         let mut due = None;
         let mut depends = HashSet::with_capacity(0);
+        let mut modified = None;
         let mut uda = HashMap::new();
         let mut until = None;
 
@@ -46,6 +48,9 @@ impl FromIterator<String> for Task {
                     depends.extend(deps.split(",").map(|s| s.to_owned()));
                 }
                 Some(("un" | "unt" | "unti" | "until", date)) => until = Some(date.to_owned()),
+                Some(("mod" | "modi" | "modif" | "modifi" | "modifie" | "modified", date)) => {
+                    modified = Some(date.to_owned())
+                }
                 Some((uda_key, uda_value)) => {
                     uda.insert(uda_key.to_owned(), uda_value.to_owned());
                 }
@@ -57,6 +62,7 @@ impl FromIterator<String> for Task {
             description: description.join(" "),
             due,
             depends,
+            modified,
             uda,
             until,
         }
@@ -145,5 +151,13 @@ mod tests {
         let task = Task::from_iter(args.into_iter());
 
         assert_eq!(task.until, Some("2025-04-15".into()))
+    }
+
+    #[test]
+    fn modified() {
+        let args = vec!["modified:2025-01-01"];
+        let task = Task::from_iter(args.into_iter());
+
+        assert_eq!(task.modified, Some("2025-01-01".into()))
     }
 }
