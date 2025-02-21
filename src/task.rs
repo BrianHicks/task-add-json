@@ -5,7 +5,7 @@ pub struct Task {
     description: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    due: Option<String>,
+    due: Option<String>, // TODO: date
 
     #[serde(skip_serializing_if = "HashSet::is_empty")]
     depends: HashSet<String>,
@@ -22,8 +22,9 @@ pub struct Task {
     uda: HashMap<String, String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    until: Option<String>,
-    // wait
+    until: Option<String>, // TODO: date
+
+                           // wait
 }
 
 impl FromIterator<String> for Task {
