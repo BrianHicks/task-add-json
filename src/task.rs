@@ -77,7 +77,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn task_from_args() {
+    fn description() {
         let args = vec!["walk", "the", "dog"];
         let task = Task::from_iter(args.into_iter());
 
@@ -126,14 +126,6 @@ mod tests {
     }
 
     #[test]
-    fn until() {
-        let args = vec!["until:2025-04-15"];
-        let task = Task::from_iter(args.into_iter());
-
-        assert_eq!(task.until, Some("2025-04-15".into()))
-    }
-
-    #[test]
     fn uda() {
         let args = vec!["jira:123", "estimate:PT5H"];
         let task = Task::from_iter(args.into_iter());
@@ -145,5 +137,13 @@ mod tests {
                 ("estimate".into(), "PT5H".into())
             ])
         )
+    }
+
+    #[test]
+    fn until() {
+        let args = vec!["until:2025-04-15"];
+        let task = Task::from_iter(args.into_iter());
+
+        assert_eq!(task.until, Some("2025-04-15".into()))
     }
 }
