@@ -23,7 +23,7 @@ pub struct Task {
     // scheduled
     // start
     // tags
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
+    #[serde(flatten, skip_serializing_if = "HashMap::is_empty")]
     uda: HashMap<String, String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
