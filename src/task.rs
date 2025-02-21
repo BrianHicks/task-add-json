@@ -29,7 +29,8 @@ pub struct Task {
     #[serde(skip_serializing_if = "Option::is_none")]
     until: Option<String>, // TODO: date
 
-                           // wait
+    #[serde(skip_serializing_if = "Option::is_none")]
+    wait: Option<String>, // TODO: date
 }
 
 impl FromIterator<String> for Task {
@@ -46,6 +47,7 @@ impl FromIterator<String> for Task {
         let mut priority = None;
         let mut uda = HashMap::new();
         let mut until = None;
+        let mut wait = None;
 
         for word in iter {
             match word.split_once(":") {
@@ -61,6 +63,7 @@ impl FromIterator<String> for Task {
                 Some(("pri" | "prio" | "prior" | "priori" | "priorit" | "priority", value)) => {
                     priority = Some(value.to_owned())
                 }
+                Some(("wa" | "wai" | "wait", value)) => wait = Some(value.to_owned()),
                 Some((uda_key, uda_value)) => {
                     uda.insert(uda_key.to_owned(), uda_value.to_owned());
                 }
@@ -77,6 +80,7 @@ impl FromIterator<String> for Task {
             priority,
             uda,
             until,
+            wait,
         }
     }
 }
@@ -187,5 +191,13 @@ mod tests {
         let task = Task::from_iter(args.into_iter());
 
         assert_eq!(task.priority, Some("high".into()))
+    }
+
+    #[test]
+    fn wait() {
+        let args = vec!["wait:2030-01-01"];
+        let task = Task::from_iter(args.into_iter());
+
+        assert_eq!(task.wait, Some("2030-01-01".into()))
     }
 }
