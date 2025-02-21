@@ -13,7 +13,9 @@ pub struct Task {
     // entry
     #[serde(skip_serializing_if = "Option::is_none")]
     modified: Option<String>, // TODO: date
-    // priority
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    priority: Option<String>,
     // project
     // recur
     // scheduled
@@ -38,6 +40,7 @@ impl FromIterator<String> for Task {
         let mut due = None;
         let mut depends = HashSet::with_capacity(0);
         let mut modified = None;
+        let mut priority = None;
         let mut uda = HashMap::new();
         let mut until = None;
 
@@ -51,6 +54,9 @@ impl FromIterator<String> for Task {
                 Some(("mod" | "modi" | "modif" | "modifi" | "modifie" | "modified", date)) => {
                     modified = Some(date.to_owned())
                 }
+                Some(("pri" | "prio" | "prior" | "priori" | "priorit" | "priority", value)) => {
+                    priority = Some(value.to_owned())
+                }
                 Some((uda_key, uda_value)) => {
                     uda.insert(uda_key.to_owned(), uda_value.to_owned());
                 }
@@ -63,6 +69,7 @@ impl FromIterator<String> for Task {
             due,
             depends,
             modified,
+            priority,
             uda,
             until,
         }
@@ -159,5 +166,13 @@ mod tests {
         let task = Task::from_iter(args.into_iter());
 
         assert_eq!(task.modified, Some("2025-01-01".into()))
+    }
+
+    #[test]
+    fn priority() {
+        let args = vec!["priority:high"];
+        let task = Task::from_iter(args.into_iter());
+
+        assert_eq!(task.priority, Some("high".into()))
     }
 }
