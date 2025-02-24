@@ -25,7 +25,9 @@ pub struct Task {
     #[serde(skip_serializing_if = "Option::is_none")]
     recur: Option<String>, // TODO: should validate recurrence
 
-    // scheduled
+    #[serde(skip_serializing_if = "Option::is_none")]
+    scheduled: Option<String>, // TODO: date
+
     #[serde(skip_serializing_if = "Option::is_none")]
     start: Option<String>, // TODO: date
 
@@ -56,6 +58,7 @@ impl FromIterator<String> for Task {
         let mut priority = None;
         let mut project = None;
         let mut recur = None;
+        let mut scheduled = None;
         let mut start = None;
         let mut tags = HashSet::new();
         let mut uda = HashMap::new();
@@ -80,6 +83,11 @@ impl FromIterator<String> for Task {
                     project = Some(value.to_owned())
                 }
                 Some(("rec" | "recu" | "recur", value)) => recur = Some(value.to_owned()),
+                Some((
+                    "sc" | "sch" | "sche" | "sched" | "schedu" | "schedul" | "schedule"
+                    | "scheduled",
+                    value,
+                )) => scheduled = Some(value.to_owned()),
                 Some(("star" | "start", value)) => start = Some(value.to_owned()),
                 Some(("wa" | "wai" | "wait", value)) => wait = Some(value.to_owned()),
                 Some((uda_key, uda_value)) => {
@@ -104,6 +112,7 @@ impl FromIterator<String> for Task {
             priority,
             project,
             recur,
+            scheduled,
             start,
             tags,
             uda,
@@ -235,6 +244,14 @@ mod tests {
         let task = Task::from_iter(args.into_iter());
 
         assert_eq!(task.recur, Some("weekly".into()))
+    }
+
+    #[test]
+    fn scheduled() {
+        let args = vec!["scheduled:tomorrow"];
+        let task = Task::from_iter(args.into_iter());
+
+        assert_eq!(task.scheduled, Some("tomorrow".into()))
     }
 
     #[test]
