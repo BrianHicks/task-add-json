@@ -28,7 +28,10 @@ pub struct Task {
     // scheduled
     #[serde(skip_serializing_if = "Option::is_none")]
     start: Option<String>, // TODO: date
-    // tags
+
+    #[serde(skip_serializing_if = "HashSet::is_empty")]
+    tags: HashSet<String>,
+
     #[serde(flatten, skip_serializing_if = "HashMap::is_empty")]
     uda: HashMap<String, String>,
 
@@ -54,6 +57,7 @@ impl FromIterator<String> for Task {
         let mut project = None;
         let mut recur = None;
         let mut start = None;
+        let mut tags = HashSet::new();
         let mut uda = HashMap::new();
         let mut until = None;
         let mut wait = None;
@@ -81,7 +85,13 @@ impl FromIterator<String> for Task {
                 Some((uda_key, uda_value)) => {
                     uda.insert(uda_key.to_owned(), uda_value.to_owned());
                 }
-                None => description.push(word),
+                None => {
+                    if word.starts_with('+') {
+                        tags.insert(word[1..].to_owned());
+                    } else {
+                        description.push(word);
+                    }
+                }
             }
         }
 
@@ -95,6 +105,7 @@ impl FromIterator<String> for Task {
             project,
             recur,
             start,
+            tags,
             uda,
             until,
             wait,
@@ -232,6 +243,14 @@ mod tests {
         let task = Task::from_iter(args.into_iter());
 
         assert_eq!(task.start, Some("tomorrow".into()))
+    }
+
+    #[test]
+    fn tags() {
+        let args = vec!["+habit", "+meta", "+habit"];
+        let task = Task::from_iter(args.into_iter());
+
+        assert_eq!(task.tags, HashSet::from(["habit".into(), "meta".into()]))
     }
 
     #[test]
