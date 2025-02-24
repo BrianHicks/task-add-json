@@ -19,7 +19,9 @@ pub struct Task {
     #[serde(skip_serializing_if = "Option::is_none")]
     priority: Option<String>,
 
-    // project
+    #[serde(skip_serializing_if = "Option::is_none")]
+    project: Option<String>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     recur: Option<String>, // TODO: should validate recurrence
 
@@ -49,6 +51,7 @@ impl FromIterator<String> for Task {
         let mut entry = None;
         let mut modified = None;
         let mut priority = None;
+        let mut project = None;
         let mut recur = None;
         let mut start = None;
         let mut uda = HashMap::new();
@@ -69,6 +72,9 @@ impl FromIterator<String> for Task {
                 Some(("pri" | "prio" | "prior" | "priori" | "priorit" | "priority", value)) => {
                     priority = Some(value.to_owned())
                 }
+                Some(("pro" | "proj" | "proje" | "projec" | "project", value)) => {
+                    project = Some(value.to_owned())
+                }
                 Some(("rec" | "recu" | "recur", value)) => recur = Some(value.to_owned()),
                 Some(("star" | "start", value)) => start = Some(value.to_owned()),
                 Some(("wa" | "wai" | "wait", value)) => wait = Some(value.to_owned()),
@@ -86,6 +92,7 @@ impl FromIterator<String> for Task {
             entry,
             modified,
             priority,
+            project,
             recur,
             start,
             uda,
@@ -201,6 +208,14 @@ mod tests {
         let task = Task::from_iter(args.into_iter());
 
         assert_eq!(task.priority, Some("high".into()))
+    }
+
+    #[test]
+    fn project() {
+        let args = vec!["project:home"];
+        let task = Task::from_iter(args.into_iter());
+
+        assert_eq!(task.project, Some("home".into()))
     }
 
     #[test]
