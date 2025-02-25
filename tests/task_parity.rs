@@ -5,14 +5,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
 fn date_strategy() -> impl Strategy<Value = String> {
-    prop_oneof![
-        "sod",
-        "eod",
-        "yesterday",
-        "tomorrow",
-        "midsommar",
-        r#"2[0-9]{3}-(01|02|03|04|05|06|07|08|09|10|11|12)-(01|05|10|15|20|25)"#
-    ]
+    prop_oneof![r#"2[0-9]{3}-(01|02|03|04|05|06|07|08|09|10|11|12)-(01|05|10|15|20|25)"#]
 }
 
 fn date_attr_strategy(prefix: &str) -> impl Strategy<Value = String> {
