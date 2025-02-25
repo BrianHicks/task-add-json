@@ -20,16 +20,84 @@ fn date_strategy() -> impl Strategy<Value = String> {
     ]
 }
 
+fn date_attr_strategy(prefix: &str) -> impl Strategy<Value = String> {
+    let prefix = prefix.to_string();
+    date_strategy().prop_map(move |value| format!("{prefix}:{value}"))
+}
+
 fn due_strategy() -> impl Strategy<Value = String> {
-    ("due", date_strategy()).prop_map(|(key, value)| format!("{key}:{value}"))
+    date_attr_strategy("due")
+}
+
+fn end_strategy() -> impl Strategy<Value = String> {
+    date_attr_strategy("end")
+}
+
+fn entry_strategy() -> impl Strategy<Value = String> {
+    date_attr_strategy("entry")
+}
+
+fn modified_strategy() -> impl Strategy<Value = String> {
+    date_attr_strategy("modified")
+}
+
+fn priority_strategy() -> impl Strategy<Value = String> {
+    prop_oneof!["h", "m", "l"].prop_map(|value| format!("priority:{value}"))
+}
+
+fn project_strategy() -> impl Strategy<Value = String> {
+    word_strategy().prop_map(|value| format!("project:{value}"))
 }
 
 fn word_strategy() -> impl Strategy<Value = String> {
     prop_oneof!["a", "b", "c"]
 }
 
+fn recur_strategy() -> impl Strategy<Value = String> {
+    prop_oneof!["weekly", "monthly", "yearly"].prop_map(|value| format!("recur:{value}"))
+}
+
+fn scheduled_strategy() -> impl Strategy<Value = String> {
+    date_attr_strategy("scheduled")
+}
+
+fn start_strategy() -> impl Strategy<Value = String> {
+    date_attr_strategy("start")
+}
+
+fn tag_strategy() -> impl Strategy<Value = String> {
+    word_strategy().prop_map(|value| format!("+{value}"))
+}
+
+fn uda_strategy() -> impl Strategy<Value = String> {
+    (word_strategy(), word_strategy()).prop_map(|(uda, value)| format!("{uda}:{value}"))
+}
+
+fn until_strategy() -> impl Strategy<Value = String> {
+    date_attr_strategy("until")
+}
+
+fn wait_strategy() -> impl Strategy<Value = String> {
+    date_attr_strategy("wait")
+}
+
 fn arg_strategy() -> impl Strategy<Value = String> {
-    prop_oneof![word_strategy(), due_strategy()]
+    prop_oneof![
+        word_strategy(),
+        due_strategy(),
+        end_strategy(),
+        entry_strategy(),
+        modified_strategy(),
+        priority_strategy(),
+        project_strategy(),
+        recur_strategy(),
+        scheduled_strategy(),
+        start_strategy(),
+        tag_strategy(),
+        uda_strategy(),
+        until_strategy(),
+        wait_strategy(),
+    ]
 }
 
 fn args_strategy() -> impl Strategy<Value = Vec<String>> {
@@ -79,6 +147,7 @@ proptest! {
             Command::new("task")
                 .arg("import")
                 .env("TASKDATA", temp.path())
+                .env("TASKRC", temp.path())
                 .stdin(task_json.stdout.unwrap())
                 .output()
                 .expect("successful call to `task import`");
@@ -94,6 +163,7 @@ proptest! {
                 .arg("add")
                 .args(&args)
                 .env("TASKDATA", temp.path())
+                .env("TASKRC", temp.path())
                 .status()
                 .expect("successful call to `task add`");
 
