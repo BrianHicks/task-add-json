@@ -1,7 +1,7 @@
 use proptest::collection::vec;
 use proptest::prelude::*;
 use std::collections::HashSet;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
 fn date_strategy() -> impl Strategy<Value = String> {
@@ -137,12 +137,7 @@ const BIN: &str = env!("CARGO_BIN_EXE_task-json");
 proptest! {
     #[test]
     fn task_parity(args in args_strategy()) {
-        let rc_dir = tempdir::TempDir::new("taskrc").expect("tempfile to be created");
-        let rc = rc_dir.path().join("taskrc");
-        std::fs::write(
-            &rc,
-            "uda.priority.values=h,m,l\nuda.good.type=string"
-        ).expect("the taskrc to be written successfully");
+        let rc = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests").join("taskrc");
 
         // parse command line to json and import with our binary
         let from_task_json = {
