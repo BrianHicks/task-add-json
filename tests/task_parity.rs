@@ -101,11 +101,19 @@ fn arg_strategy() -> impl Strategy<Value = String> {
 }
 
 fn args_strategy() -> impl Strategy<Value = Vec<String>> {
-    (word_strategy(), vec(arg_strategy(), 1..10)).prop_map(|(arg, mut rest)| {
-        rest.insert(0, arg);
+    (word_strategy(), vec(arg_strategy(), 1..10))
+        .prop_map(|(arg, mut rest)| {
+            rest.insert(0, arg);
 
-        rest
-    })
+            rest
+        })
+        .prop_filter("recur requires due", |args| {
+            if args.iter().any(|arg| arg.starts_with("recur:")) {
+                args.iter().any(|arg| arg.starts_with("due:"))
+            } else {
+                true
+            }
+        })
 }
 
 fn export_only(dir: &Path) -> serde_json::Map<String, serde_json::Value> {
