@@ -145,6 +145,7 @@ proptest! {
                 .expect("successful call to `task-json`");
 
             Command::new("task")
+                .arg("rc.uda.priority.values=h,m,l")
                 .arg("import")
                 .env("TASKDATA", temp.path())
                 .env("TASKRC", temp.path())
@@ -160,6 +161,7 @@ proptest! {
             let temp = tempdir::TempDir::new("task-json").unwrap();
 
             let status = Command::new("task")
+                .arg("rc.uda.priority.values=h,m,l")
                 .arg("add")
                 .args(&args)
                 .env("TASKDATA", temp.path())
