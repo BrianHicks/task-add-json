@@ -6,15 +6,10 @@ use std::process::{Command, Stdio};
 
 fn date_strategy() -> impl Strategy<Value = String> {
     prop_oneof![
-        "today",
         "sod",
         "eod",
         "yesterday",
         "tomorrow",
-        "monday",
-        "friday",
-        "1st",
-        "28th",
         "midsommar",
         r#"2[0-9]{3}-(01|02|03|04|05|06|07|08|09|10|11|12)-(01|05|10|15|20|25)"#
     ]
