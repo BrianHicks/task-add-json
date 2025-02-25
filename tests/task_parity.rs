@@ -148,6 +148,8 @@ proptest! {
 
             let task_json = Command::new(BIN)
                 .args(&args)
+                .env("TASKDATA", temp.path())
+                .env("TASKRC", temp.path())
                 .stdout(Stdio::piped())
                 .spawn()
                 .expect("successful call to `task-json`");
