@@ -47,8 +47,8 @@ pub struct Task {
     wait: Option<String>, // TODO: date
 }
 
-impl FromIterator<String> for Task {
-    fn from_iter<T>(iter: T) -> Self
+impl Task {
+    pub fn from_args<T>(iter: T, udas: HashSet<String>) -> Self
     where
         T: IntoIterator<Item = String>,
     {
@@ -96,7 +96,11 @@ impl FromIterator<String> for Task {
                 Some(("star" | "start", value)) => start = Some(value.to_owned()),
                 Some(("wa" | "wai" | "wait", value)) => wait = Some(value.to_owned()),
                 Some((uda_key, uda_value)) => {
-                    uda.insert(uda_key.to_owned(), uda_value.to_owned());
+                    if udas.contains(uda_key) {
+                        uda.insert(uda_key.to_owned(), uda_value.to_owned());
+                    } else {
+                        description.push(word);
+                    }
                 }
                 None => {
                     if word.starts_with('+') {
@@ -128,39 +132,31 @@ impl FromIterator<String> for Task {
     }
 }
 
-impl<'a> FromIterator<&'a str> for Task {
-    fn from_iter<T>(iter: T) -> Self
-    where
-        T: IntoIterator<Item = &'a str>,
-    {
-        Task::from_iter(iter.into_iter().map(|s| s.to_owned()))
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    fn from_args(args: Vec<&str>) -> Task {
+        Task::from_args(args.into_iter().map(|s| s.to_owned()), HashSet::new())
+    }
+
     #[test]
     fn description() {
-        let args = vec!["walk", "the", "dog"];
-        let task = Task::from_iter(args.into_iter());
+        let task = from_args(vec!["walk", "the", "dog"]);
 
         assert_eq!(task.description, "walk the dog");
     }
 
     #[test]
     fn due() {
-        let args = vec!["pay", "taxes", "due:2025-04-15"];
-        let task = Task::from_iter(args.into_iter());
+        let task = from_args(vec!["pay", "taxes", "due:2025-04-15"]);
 
         assert_eq!(task.due, Some("2025-04-15".into()))
     }
 
     #[test]
     fn depends() {
-        let args = vec!["depends:1", "depends:2"];
-        let task = Task::from_iter(args.into_iter());
+        let task = from_args(vec!["depends:1", "depends:2"]);
 
         assert_eq!(
             task.depends,
@@ -170,8 +166,7 @@ mod tests {
 
     #[test]
     fn depends_split() {
-        let args = vec!["depends:1,2"];
-        let task = Task::from_iter(args.into_iter());
+        let task = from_args(vec!["depends:1,2"]);
 
         assert_eq!(
             task.depends,
@@ -181,8 +176,7 @@ mod tests {
 
     #[test]
     fn depends_dupe() {
-        let args = vec!["depends:1,2", "depends:1"];
-        let task = Task::from_iter(args.into_iter());
+        let task = from_args(vec!["depends:1,2", "depends:1"]);
 
         assert_eq!(
             task.depends,
@@ -192,102 +186,92 @@ mod tests {
 
     #[test]
     fn end() {
-        let args = vec!["end:2025-01-01"];
-        let task = Task::from_iter(args.into_iter());
+        let task = from_args(vec!["end:2025-01-01"]);
 
         assert_eq!(task.end, Some("2025-01-01".into()))
     }
 
     #[test]
     fn entry() {
-        let args = vec!["entry:2025-01-01"];
-        let task = Task::from_iter(args.into_iter());
+        let task = from_args(vec!["entry:2025-01-01"]);
 
         assert_eq!(task.entry, Some("2025-01-01".into()))
     }
 
     #[test]
-    fn uda() {
-        let args = vec!["jira:123", "estimate:PT5H"];
-        let task = Task::from_iter(args.into_iter());
-
-        assert_eq!(
-            task.uda,
-            HashMap::from([
-                ("jira".into(), "123".into()),
-                ("estimate".into(), "PT5H".into())
-            ])
-        )
-    }
-
-    #[test]
     fn until() {
-        let args = vec!["until:2025-04-15"];
-        let task = Task::from_iter(args.into_iter());
+        let task = from_args(vec!["until:2025-04-15"]);
 
         assert_eq!(task.until, Some("2025-04-15".into()))
     }
 
     #[test]
     fn modified() {
-        let args = vec!["modified:2025-01-01"];
-        let task = Task::from_iter(args.into_iter());
+        let task = from_args(vec!["modified:2025-01-01"]);
 
         assert_eq!(task.modified, Some("2025-01-01".into()))
     }
 
     #[test]
     fn priority() {
-        let args = vec!["priority:high"];
-        let task = Task::from_iter(args.into_iter());
+        let task = from_args(vec!["priority:high"]);
 
         assert_eq!(task.priority, Some("high".into()))
     }
 
     #[test]
     fn project() {
-        let args = vec!["project:home"];
-        let task = Task::from_iter(args.into_iter());
+        let task = from_args(vec!["project:home"]);
 
         assert_eq!(task.project, Some("home".into()))
     }
 
     #[test]
     fn recur() {
-        let args = vec!["recur:weekly"];
-        let task = Task::from_iter(args.into_iter());
+        let task = from_args(vec!["recur:weekly"]);
 
         assert_eq!(task.recur, Some("weekly".into()))
     }
 
     #[test]
     fn scheduled() {
-        let args = vec!["scheduled:tomorrow"];
-        let task = Task::from_iter(args.into_iter());
+        let task = from_args(vec!["scheduled:tomorrow"]);
 
         assert_eq!(task.scheduled, Some("tomorrow".into()))
     }
 
     #[test]
     fn start() {
-        let args = vec!["start:tomorrow"];
-        let task = Task::from_iter(args.into_iter());
+        let task = from_args(vec!["start:tomorrow"]);
 
         assert_eq!(task.start, Some("tomorrow".into()))
     }
 
     #[test]
     fn tags() {
-        let args = vec!["+habit", "+meta", "+habit"];
-        let task = Task::from_iter(args.into_iter());
+        let task = from_args(vec!["+habit", "+meta", "+habit"]);
 
         assert_eq!(task.tags, HashSet::from(["habit".into(), "meta".into()]))
     }
 
     #[test]
+    fn uda() {
+        let args = vec!["jira:123", "estimate:PT5H"];
+        let task = Task::from_args(
+            args.into_iter().map(|s| s.to_owned()),
+            HashSet::from(["estimate".to_owned()]),
+        );
+
+        assert_eq!(task.description, "jira:123");
+        assert_eq!(
+            task.uda,
+            HashMap::from([("estimate".into(), "PT5H".into())])
+        )
+    }
+
+    #[test]
     fn wait() {
-        let args = vec!["wait:2030-01-01"];
-        let task = Task::from_iter(args.into_iter());
+        let task = from_args(vec!["wait:2030-01-01"]);
 
         assert_eq!(task.wait, Some("2030-01-01".into()))
     }
