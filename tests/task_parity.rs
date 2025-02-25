@@ -25,10 +25,6 @@ fn entry_strategy() -> impl Strategy<Value = String> {
     date_attr_strategy("entry")
 }
 
-fn modified_strategy() -> impl Strategy<Value = String> {
-    date_attr_strategy("modified")
-}
-
 fn priority_strategy() -> impl Strategy<Value = String> {
     prop_oneof!["h", "m", "l"].prop_map(|value| format!("priority:{value}"))
 }
@@ -75,7 +71,6 @@ fn arg_strategy() -> impl Strategy<Value = String> {
         due_strategy(),
         end_strategy(),
         entry_strategy(),
-        modified_strategy(),
         priority_strategy(),
         project_strategy(),
         recur_strategy(),
@@ -202,11 +197,7 @@ proptest! {
             all_keys.remove(&String::from("entry"));
         }
 
-        // Testing modified date is flakey, unless we set it explicitly
-        // (TODO: check for explicit sets)
-        if !args.iter().any(|arg| arg.starts_with("modified:")) {
-            all_keys.remove(&String::from("modified"));
-        }
+        all_keys.remove(&String::from("modified"));
 
         for key in all_keys {
             prop_assert_eq!(
