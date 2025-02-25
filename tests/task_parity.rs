@@ -179,17 +179,20 @@ proptest! {
         // We don't care about the UUID
         all_keys.remove(&String::from("uuid"));
 
-        // Testing entry date is flakey, unless we set it explicitly
-        // (TODO: check for explicit sets)
-        all_keys.remove(&String::from("entry"));
-
-        // Testing modified date is flakey, unless we set it explicitly
-        // (TODO: check for explicit sets)
-        all_keys.remove(&String::from("modified"));
-
         // Urgency is a float (so not always directly comparable) and it's
         // derived from the other attributes we care about.
         all_keys.remove(&String::from("urgency"));
+
+        // Testing entry date is flakey, unless we set it explicitly
+        if !args.iter().any(|arg| arg.starts_with("entry:")) {
+            all_keys.remove(&String::from("entry"));
+        }
+
+        // Testing modified date is flakey, unless we set it explicitly
+        // (TODO: check for explicit sets)
+        if !args.iter().any(|arg| arg.starts_with("modified:")) {
+            all_keys.remove(&String::from("modified"));
+        }
 
         for key in all_keys {
             prop_assert_eq!(
