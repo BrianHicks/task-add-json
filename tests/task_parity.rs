@@ -70,7 +70,7 @@ fn tag_strategy() -> impl Strategy<Value = String> {
 }
 
 fn uda_strategy() -> impl Strategy<Value = String> {
-    (word_strategy(), word_strategy()).prop_map(|(uda, value)| format!("{uda}:{value}"))
+    (prop_oneof!["good", "bad"], word_strategy()).prop_map(|(uda, value)| format!("{uda}:{value}"))
 }
 
 fn until_strategy() -> impl Strategy<Value = String> {
@@ -142,6 +142,13 @@ const BIN: &str = env!("CARGO_BIN_EXE_task-json");
 proptest! {
     #[test]
     fn task_parity(args in args_strategy()) {
+        let rc_dir = tempdir::TempDir::new("taskrc").expect("tempfile to be created");
+        let rc = rc_dir.path().join("taskrc");
+        std::fs::write(
+            &rc,
+            "uda.priority.values=h,m,l\nuda.good.type=string"
+        ).expect("the taskrc to be written successfully");
+
         // parse command line to json and import with our binary
         let from_task_json = {
             let temp = tempdir::TempDir::new("task-json").expect("tempdir to be created");
@@ -149,16 +156,15 @@ proptest! {
             let task_json = Command::new(BIN)
                 .args(&args)
                 .env("TASKDATA", temp.path())
-                .env("TASKRC", temp.path())
+                .env("TASKRC", &rc)
                 .stdout(Stdio::piped())
                 .spawn()
                 .expect("successful call to `task-json`");
 
             Command::new("task")
-                .arg("rc.uda.priority.values=h,m,l")
                 .arg("import")
                 .env("TASKDATA", temp.path())
-                .env("TASKRC", temp.path())
+                .env("TASKRC", &rc)
                 .stdin(task_json.stdout.unwrap())
                 .output()
                 .expect("successful call to `task import`");
@@ -171,11 +177,10 @@ proptest! {
             let temp = tempdir::TempDir::new("task-json").unwrap();
 
             let status = Command::new("task")
-                .arg("rc.uda.priority.values=h,m,l")
                 .arg("add")
                 .args(&args)
                 .env("TASKDATA", temp.path())
-                .env("TASKRC", temp.path())
+                .env("TASKRC", &rc)
                 .status()
                 .expect("successful call to `task add`");
 
