@@ -5,19 +5,19 @@ pub struct Task {
     description: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    due: Option<String>, // TODO: date
+    due: Option<String>,
 
     #[serde(skip_serializing_if = "HashSet::is_empty")]
     depends: HashSet<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    end: Option<String>, // TODO: date
+    end: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    entry: Option<String>, // TODO: date
+    entry: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    modified: Option<String>, // TODO: date
+    modified: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     priority: Option<String>,
@@ -29,10 +29,10 @@ pub struct Task {
     recur: Option<String>, // TODO: should validate recurrence
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    scheduled: Option<String>, // TODO: date
+    scheduled: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    start: Option<String>, // TODO: date
+    start: Option<String>,
 
     #[serde(skip_serializing_if = "HashSet::is_empty")]
     tags: HashSet<String>,
@@ -41,10 +41,10 @@ pub struct Task {
     uda: HashMap<String, String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    until: Option<String>, // TODO: date
+    until: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    wait: Option<String>, // TODO: date
+    wait: Option<String>,
 }
 
 impl Task {
