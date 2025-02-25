@@ -136,6 +136,20 @@ proptest! {
         let from_task_json = {
             let temp = tempdir::TempDir::new("task-json").expect("tempdir to be created");
 
+            // preflight: sometimes the task command doesn't create the database
+            // in time. We'll run `task` manually to try and remove that as a
+            // source of flakiness.
+            let preflight_output = Command::new("task")
+                .arg("_udas")
+                .env("TASKDATA", temp.path())
+                .env("TASKRC", &rc)
+                .output()
+                .expect("successful call to `task add`");
+
+            if !preflight_output.status.success() {
+                panic!("task _udas failed: {}", String::from_utf8_lossy(&preflight_output.stderr))
+            }
+
             let task_json = Command::new(BIN)
                 .args(&args)
                 .env("TASKDATA", temp.path())
